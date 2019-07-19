@@ -1,0 +1,9 @@
+Gargoyle has been modified to support cmd line arguments which control its runtime behavior: 
+
+Gargoyle.exe    // runs like the original code
+Gargoyle.exe 0 some_dll_containing_rop_gadget.dll     // almost same as original, except for cmd line specification of dll
+
+// To set the initial permission for the memory section to RO, the first argument should be 1
+Gargoyle.exe 1
+Gargoyle.exe 1 some_dll_containing_rop_gadget.dll
+
