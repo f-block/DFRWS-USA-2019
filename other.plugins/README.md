@@ -7,6 +7,7 @@ The link to the corresponding repositories, according with their commit number, 
 
 * [Hashtest](https://github.com/f-block/Hashtest/)
    We created a fork of the [original repository](https://github.com/a-white/Hashtest/tree/5bd60455b3a06070bfa454fe55e4b66b25c502d4) with the following modifications:
+
    **Hashbuild:**
    Fixed bug that prevents the offsets from being put into the hashset
 
