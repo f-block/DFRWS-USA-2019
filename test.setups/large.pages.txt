@@ -1,0 +1,5 @@
+# assign admin user the SeLockMemoryPrivilege privilege
+# start MemTests.exe with admin rights
+d - <ENTER>
+n - <ENTER>
+l - <ENTER> - 0x1400000 - <ENTER> - 0x20003000 - 0x40 - n - <ENTER> - <ENTER>

@@ -1,0 +1,253 @@
+First, we examine the situation where we change the OriginalPTE's protection and observe the effects:
+=====================================================================================================
+
+initial situation:
+
+!pte db0000
+                                           VA 0000000000db0000
+PXE at FFFF81C0E0703000    PPE at FFFF81C0E0600000    PDE at FFFF81C0C0000030    PTE at FFFF818000006D80
+contains 00C0000002A61867  contains 00D0000027462867  contains 0140000033D68867  contains 80A0000022320824
+pfn 2a61      ---DA--UWEV  pfn 27462     ---DA--UWEV  pfn 33d68     ---DA--UWEV  not valid
+                                                                                  Transition: 22320
+                                                                                  Protect: 1 - Readonly
+
+dt nt!_MMPTE_TRANSITION FFFF818000006D80
+   +0x000 Valid            : 0y0
+   +0x000 Write            : 0y0
+   +0x000 Spare            : 0y01
+   +0x000 IoTracker        : 0y0
+   +0x000 Protection       : 0y00001 (0x1)
+   +0x000 Prototype        : 0y0
+   +0x000 Transition       : 0y1
+   +0x000 PageFrameNumber  : 0y000000000000000000100010001100100000 (0x22320)
+   +0x000 Unused           : 0y1000000010100000 (0x80a0)
+
+!pfn 22320
+    PFN 00022320 at address FFFFEE0000669600
+    flink       0000979F  blink / share count 00017B2B  pteaddress FFFF818000006D80
+    reference count 0000    used entry count  0000      Cached    color 0   Priority 5
+    restore pte 2FEC800000024  containing page 033D68  Modified   M       
+    Modified                
+
+kd> dt nt!_MMPTE_SOFTWARE FFFFEE0000669610
+   +0x000 Valid            : 0y0
+   +0x000 PageFileLow      : 0y0010
+   +0x000 Protection       : 0y00001 (0x1)
+   +0x000 Prototype        : 0y0
+   +0x000 Transition       : 0y0
+   +0x000 PageFileReserved : 0y0
+   +0x000 PageFileAllocated : 0y0
+   +0x000 UsedPageTableEntries : 0y0000000000 (0)
+   +0x000 LocalPartition   : 0y0
+   +0x000 Unused           : 0y0000000 (0)
+   +0x000 PageFileHigh     : 0y00000000000000101111111011001000 (0x2fec8)
+kd> dt nt!_MMPTE_TRANSITION FFFFEE0000669610
+   +0x000 Valid            : 0y0
+   +0x000 Write            : 0y0
+   +0x000 Spare            : 0y01
+   +0x000 IoTracker        : 0y0
+   +0x000 Protection       : 0y00001 (0x1)
+   +0x000 Prototype        : 0y0
+   +0x000 Transition       : 0y0
+   +0x000 PageFrameNumber  : 0y111111101100100000000000000000000000 (0xfec800000)
+   +0x000 Unused           : 0y0000000000000010 (0x2)
+
+
+
+now, we change the protection from OriginalPTE in the PFN db to rwx, while the PTE still says ReadOnly:
+
+kd> !pte db0000
+                                           VA 0000000000db0000
+PXE at FFFF81C0E0703000    PPE at FFFF81C0E0600000    PDE at FFFF81C0C0000030    PTE at FFFF818000006D80
+contains 00C0000002A61867  contains 00D0000027462867  contains 0140000033D68867  contains 80A0000022320824
+pfn 2a61      ---DA--UWEV  pfn 27462     ---DA--UWEV  pfn 33d68     ---DA--UWEV  not valid
+                                                                                  Transition: 22320
+                                                                                  Protect: 1 - Readonly
+
+kd> !pfn 22320
+    PFN 00022320 at address FFFFEE0000669600
+    flink       0000979F  blink / share count 00017B2B  pteaddress FFFF818000006D80
+    reference count 0000    used entry count  0000      Cached    color 0   Priority 5
+    restore pte 2FEC8000000C4  containing page 033D68  Modified   M       
+    Modified                
+kd> dt nt!_MMPTE_TRANSITION FFFFEE0000669610
+   +0x000 Valid            : 0y0
+   +0x000 Write            : 0y0
+   +0x000 Spare            : 0y01
+   +0x000 IoTracker        : 0y0
+   +0x000 Protection       : 0y00110 (0x6)
+   +0x000 Prototype        : 0y0
+   +0x000 Transition       : 0y0
+   +0x000 PageFrameNumber  : 0y111111101100100000000000000000000000 (0xfec800000)
+   +0x000 Unused           : 0y0000000000000010 (0x2)
+
+
+
+when now reading the page, the resulting permissions are that of the PTE's protection field, not that of the OriginalPTE:
+
+kd> !pte db0000
+                                           VA 0000000000db0000
+PXE at FFFF81C0E0703000    PPE at FFFF81C0E0600000    PDE at FFFF81C0C0000030    PTE at FFFF818000006D80
+contains 00C0000002A61867  contains 00D0000027462867  contains 0140000033D68867  contains 86A0000022320025
+pfn 2a61      ---DA--UWEV  pfn 27462     ---DA--UWEV  pfn 33d68     ---DA--UWEV  pfn 22320     ----A--UR-V
+
+kd> dt nt!_MMPTE_HARDWARE FFFF818000006D80
+   +0x000 Valid            : 0y1
+   +0x000 Dirty1           : 0y0
+   +0x000 Owner            : 0y1
+   +0x000 WriteThrough     : 0y0
+   +0x000 CacheDisable     : 0y0
+   +0x000 Accessed         : 0y1
+   +0x000 Dirty            : 0y0
+   +0x000 LargePage        : 0y0
+   +0x000 Global           : 0y0
+   +0x000 CopyOnWrite      : 0y0
+   +0x000 Unused           : 0y0
+   +0x000 Write            : 0y0
+   +0x000 PageFrameNumber  : 0y000000000000000000100010001100100000 (0x22320)
+   +0x000 reserved1        : 0y0000
+   +0x000 SoftwareWsIndex  : 0y00001101010 (0x6a)
+   +0x000 NoExecute        : 0y1
+
+
+kd> !pfn 22320     
+    PFN 00022320 at address FFFFEE0000669600
+    flink       0000006A  blink / share count 00000001  pteaddress FFFF818000006D80
+    reference count 0001    used entry count  0000      Cached    color 0   Priority 5
+    restore pte 2FEC8000000C4  containing page 033D68  Active     M       
+    Modified   
+
+
+
+
+
+
+================
+
+when the page however now goes in transition, it has the protection of the OriginalPTE:
+
+kd> !pte db0000
+                                           VA 0000000000db0000
+PXE at FFFF81C0E0703000    PPE at FFFF81C0E0600000    PDE at FFFF81C0C0000030    PTE at FFFF818000006D80
+contains 00C0000002A61867  contains 00D0000027462867  contains 0140000033D68867  contains 86A00000223208C4
+pfn 2a61      ---DA--UWEV  pfn 27462     ---DA--UWEV  pfn 33d68     ---DA--UWEV  not valid
+                                                                                  Transition: 22320
+                                                                                  Protect: 6 - ReadWriteExecute
+
+kd> dt nt!_MMPTE_TRANSITION FFFF818000006D80
+   +0x000 Valid            : 0y0
+   +0x000 Write            : 0y0
+   +0x000 Spare            : 0y01
+   +0x000 IoTracker        : 0y0
+   +0x000 Protection       : 0y00110 (0x6)
+   +0x000 Prototype        : 0y0
+   +0x000 Transition       : 0y1
+   +0x000 PageFrameNumber  : 0y000000000000000000100010001100100000 (0x22320)
+   +0x000 Unused           : 0y1000011010100000 (0x86a0)
+
+
+
+
+
+
+
+The second part examines the situation where we change the PTE's protection and observe the effects:
+====================================================================================================
+
+initial situation: page is valid
+
+kd> !pte db0000
+                                           VA 0000000000db0000
+PXE at FFFF81C0E0703000    PPE at FFFF81C0E0600000    PDE at FFFF81C0C0000030    PTE at FFFF818000006D80
+contains 00C0000002A61867  contains 00D0000027462867  contains 0140000033D68867  contains 06A00000370D1867
+pfn 2a61      ---DA--UWEV  pfn 27462     ---DA--UWEV  pfn 33d68     ---DA--UWEV  pfn 370d1     ---DA--UWEV
+
+kd> !pfn 370d1
+    PFN 000370D1 at address FFFFEE0000A52730
+    flink       0000006A  blink / share count 00000001  pteaddress FFFF818000006D80
+    reference count 0001    used entry count  0000      Cached    color 0   Priority 5
+    restore pte 392F7000000C4  containing page 033D68  Active     M       
+    Modified                
+kd> dt nt!_MMPTE_HARDWARE FFFF818000006D80
+   +0x000 Valid            : 0y1
+   +0x000 Dirty1           : 0y1
+   +0x000 Owner            : 0y1
+   +0x000 WriteThrough     : 0y0
+   +0x000 CacheDisable     : 0y0
+   +0x000 Accessed         : 0y1
+   +0x000 Dirty            : 0y1
+   +0x000 LargePage        : 0y0
+   +0x000 Global           : 0y0
+   +0x000 CopyOnWrite      : 0y0
+   +0x000 Unused           : 0y0
+   +0x000 Write            : 0y1
+   +0x000 PageFrameNumber  : 0y000000000000000000110111000011010001 (0x370d1)
+   +0x000 reserved1        : 0y0000
+   +0x000 SoftwareWsIndex  : 0y00001101010 (0x6a)
+   +0x000 NoExecute        : 0y0
+
+
+
+now we modify the execute, write and dirty flags of the PTE:
+
+kd> dt nt!_MMPTE_HARDWARE FFFF818000006D80
+   +0x000 Valid            : 0y1
+   +0x000 Dirty1           : 0y0
+   +0x000 Owner            : 0y1
+   +0x000 WriteThrough     : 0y0
+   +0x000 CacheDisable     : 0y0
+   +0x000 Accessed         : 0y1
+   +0x000 Dirty            : 0y0
+   +0x000 LargePage        : 0y0
+   +0x000 Global           : 0y0
+   +0x000 CopyOnWrite      : 0y0
+   +0x000 Unused           : 0y0
+   +0x000 Write            : 0y0
+   +0x000 PageFrameNumber  : 0y000000000000000000110111000011010001 (0x370d1)
+   +0x000 reserved1        : 0y0000
+   +0x000 SoftwareWsIndex  : 0y00001101010 (0x6a)
+   +0x000 NoExecute        : 0y1
+
+
+
+and shrink the ws:
+
+kd> !pte db0000
+                                           VA 0000000000db0000
+PXE at FFFF81C0E0703000    PPE at FFFF81C0E0600000    PDE at FFFF81C0C0000030    PTE at FFFF818000006D80
+contains 00C0000002A61867  contains 00D0000027462867  contains 0140000033D68867  contains 86A00000370D18C4
+pfn 2a61      ---DA--UWEV  pfn 27462     ---DA--UWEV  pfn 33d68     ---DA--UWEV  not valid
+                                                                                  Transition: 370d1
+                                                                                  Protect: 6 - ReadWriteExecute
+
+kd> dt nt!_MMPTE_TRANSITION FFFF818000006D80
+   +0x000 Valid            : 0y0
+   +0x000 Write            : 0y0
+   +0x000 Spare            : 0y01
+   +0x000 IoTracker        : 0y0
+   +0x000 Protection       : 0y00110 (0x6)
+   +0x000 Prototype        : 0y0
+   +0x000 Transition       : 0y1
+   +0x000 PageFrameNumber  : 0y000000000000000000110111000011010001 (0x370d1)
+   +0x000 Unused           : 0y1000011010100000 (0x86a0)
+
+
+kd> !pfn 370d1
+    PFN 000370D1 at address FFFFEE0000A52730
+    flink       0002FEC1  blink / share count 00010BD0  pteaddress FFFF818000006D80
+    reference count 0000    used entry count  0000      Cached    color 0   Priority 5
+    restore pte 392F7000000C4  containing page 033D68  Modified   M       
+    Modified                
+kd> dt nt!_MMPTE_TRANSITION FFFFEE0000A52730+10
+   +0x000 Valid            : 0y0
+   +0x000 Write            : 0y0
+   +0x000 Spare            : 0y01
+   +0x000 IoTracker        : 0y0
+   +0x000 Protection       : 0y00110 (0x6)
+   +0x000 Prototype        : 0y0
+   +0x000 Transition       : 0y0
+   +0x000 PageFrameNumber  : 0y100100101111011100000000000000000000 (0x92f700000)
+   +0x000 Unused           : 0y0000000000000011 (0x3)
+
+as can be seen, the protection information is not influenced by the PTE's values and the OriginalPTE has also still the 0x6 protection (rwx)
+

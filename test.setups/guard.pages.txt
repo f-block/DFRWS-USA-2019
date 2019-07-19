@@ -1,0 +1,29 @@
+# first area with guard-page VAD (0x140) and untouched: 0x9a0000 - 0x9b0000
+l - <ENTER> - 0x10000 - <ENTER> - 0x140 - <ENTER> - <ENTER> - <ENTER>
+
+# second area with guard-page VAD (0x140): 0x9b0000 - 0x9c0000
+l - <ENTER> - 0x10000 - <ENTER> - 0x140 - <ENTER> - <ENTER> - <ENTER>
+# first page read twice, second once, third once and protection changed afterwards, rest untouched
+a - p - r - 0x9b0000 - 0x9b0010 - <ENTER> - <ENTER>
+a - p - r - 0x9b0000 - 0x9b0010 - <ENTER> - <ENTER>
+a - p - r - 0x9b1000 - 0x9b1010 - <ENTER> - <ENTER>
+a - p - r - 0x9b2000 - 0x9b2010 - <ENTER> - <ENTER>
+v - 0x9b2000 - 0x1000 - 0x4 - <ENTER> - <ENTER> - <ENTER>
+
+# third area with guard-page VAD (0x140) and all pages set explicit protection (0x140): 0x9c0000 - 0x9d0000
+l - <ENTER> - 0x10000 - <ENTER> - 0x140 - <ENTER> - <ENTER> - <ENTER>
+v - 0x9c0000 - 0x10000 - 0x140 - <ENTER> - <ENTER> - <ENTER>
+
+# fourth area with normal VAD (0x4) and all pages set explicit protection (0x140): 0x9d0000 - 0x9e0000
+l - <ENTER> - 0x10000 - <ENTER> - 0x4 - <ENTER> - <ENTER> - <ENTER>
+v - 0x9d0000 - 0x10000 - 0x140 - <ENTER> - <ENTER> - <ENTER>
+# first page read twice, second once, third once and protection changed afterwards, rest untouched
+a - p - r - 0x9d0000 - 0x9d0010 - <ENTER> - <ENTER>
+a - p - r - 0x9d0000 - 0x9d0010 - <ENTER> - <ENTER>
+a - p - r - 0x9d1000 - 0x9d1010 - <ENTER> - <ENTER>
+a - p - r - 0x9d2000 - 0x9d2010 - <ENTER> - <ENTER>
+v - 0x9d2000 - 0x1000 - 0x4 - <ENTER> - <ENTER> - <ENTER>
+
+# fifth area with normal VAD (0x40) and just one guard page: 0x9e0000 - 0x9f0000
+l - <ENTER> - 0x10000 - <ENTER> - 0x40 - <ENTER> - <ENTER> - <ENTER>
+v - 0x9e3000 - 0x1000 - 0x140 - <ENTER> - <ENTER> - <ENTER>

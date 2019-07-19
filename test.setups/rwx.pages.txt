@@ -1,0 +1,83 @@
+# first area pagefile pages VAD RW(0x4), modified to 0x40(RWX): 0xc30000 - 0xc40000
+l - <ENTER> - 0x10000 - <ENTER> - 0x4 - <ENTER> - <ENTER> - <ENTER>
+a - p - w - 0xc30000 - 0xc40000 - <ENTER> - <ENTER>
+v - 0xc30000 - 0x10000 - 0x40 - <ENTER> - <ENTER> - <ENTER>
+
+# second area pagefile pages VAD RW(0x4), modified to 0x20(RX): 0xb30000 - 0xb40000
+l - <ENTER> - 0x10000 - <ENTER> - 0x4 - <ENTER> - <ENTER> - <ENTER>
+a - p - w - 0xb30000 - 0xb40000 - <ENTER> - <ENTER>
+v - 0xb30000 - 0x10000 - 0x20 - <ENTER> - <ENTER> - <ENTER>
+
+# third area pagefile pages VAD RW(0x4), modified to 0x10(X): 0xb40000 - 0xb50000
+l - <ENTER> - 0x10000 - <ENTER> - 0x4 - <ENTER> - <ENTER> - <ENTER>
+a - p - w - 0xb40000 - 0xb50000 - <ENTER> - <ENTER>
+v - 0xb40000 - 0x10000 - 0x10 - <ENTER> - <ENTER> - <ENTER>
+
+# fourth area pagefile pages VAD RWX(0x40), one page modified to 0x4(RW): 0xb50000 - 0xb60000
+l - <ENTER> - 0x10000 - <ENTER> - 0x40 - <ENTER> - <ENTER> - <ENTER>
+a - p - w - 0xb50000 - 0xb60000 - <ENTER> - <ENTER>
+v - 0xb54000 - 0x1000 - 0x4 - <ENTER> - <ENTER> - <ENTER>
+
+s - <ENTER> - <ENTER>
+
+#  started some applications to force the pages to go from transition into pagefile
+
+
+# now, in new Memtest instance, which is going to be the transition test:
+# first area transition pages VAD RW(0x4), modified to 0x40(RWX): 0x10d0000 - 0x10e0000
+l - <ENTER> - 0x10000 - <ENTER> - 0x4 - <ENTER> - <ENTER> - <ENTER>
+a - p - w - 0x10d0000 - 0x10e0000 - <ENTER> - <ENTER>
+v - 0x10d0000 - 0x10000 - 0x40 - <ENTER> - <ENTER> - <ENTER>
+
+# second area transition pages VAD RW(0x4), modified to 0x20(RX): 0x10e0000 - 0x10f0000
+l - <ENTER> - 0x10000 - <ENTER> - 0x4 - <ENTER> - <ENTER> - <ENTER>
+a - p - w - 0x10e0000 - 0x10f0000 - <ENTER> - <ENTER>
+v - 0x10e0000 - 0x10000 - 0x20 - <ENTER> - <ENTER> - <ENTER>
+
+# third area transition pages VAD RW(0x4), modified to 0x10(X): 0x10f0000 - 0x1100000
+l - <ENTER> - 0x10000 - <ENTER> - 0x4 - <ENTER> - <ENTER> - <ENTER>
+a - p - w - 0x10f0000 - 0x1100000 - <ENTER> - <ENTER>
+v - 0x10f0000 - 0x10000 - 0x10 - <ENTER> - <ENTER> - <ENTER>
+
+# fourth area transition pages VAD RWX(0x40), one page modified to 0x4(RW): 0x1100000 - 0x1110000
+l - <ENTER> - 0x10000 - <ENTER> - 0x40 - <ENTER> - <ENTER> - <ENTER>
+a - p - w - 0x1100000 - 0x1110000 - <ENTER> - <ENTER>
+v - 0x1104000 - 0x1000 - 0x4 - <ENTER> - <ENTER> - <ENTER>
+
+# a fifth area with unaccessed pages VAD (0x40): 0x1110000 - 0x1120000
+l - <ENTER> - 0x10000 - <ENTER> - 0x40 - <ENTER> - <ENTER> - <ENTER>
+
+# a sixth area with unaccessed pages VAD RW(0x4) and one modified page to 0x40: 0x1120000 - 0x1130000
+l - <ENTER> - 0x10000 - <ENTER> - 0x4 - <ENTER> - <ENTER> - <ENTER>
+v - 0x1124000 - 0x1000 - 0x40 - <ENTER> - <ENTER> - <ENTER>
+
+
+# no shrinking of the WS yet
+
+
+# new Memtest instance, which is going to be the valid pages test:
+# first area valid pages VAD RW(0x4), modified to 0x40(RWX): 0xae0000 - 0xaf0000
+l - <ENTER> - 0x10000 - <ENTER> - 0x4 - <ENTER> - <ENTER> - <ENTER>
+a - p - w - 0xae0000 - 0xaf0000 - <ENTER> - <ENTER>
+v - 0xae0000 - 0x10000 - 0x40 - <ENTER> - <ENTER> - <ENTER>
+
+# second area valid pages VAD RW(0x4), modified to 0x20(RX): 0xaf0000 - 0xb00000
+l - <ENTER> - 0x10000 - <ENTER> - 0x4 - <ENTER> - <ENTER> - <ENTER>
+a - p - w - 0xaf0000 - 0xb00000 - <ENTER> - <ENTER>
+v - 0xaf0000 - 0x10000 - 0x20 - <ENTER> - <ENTER> - <ENTER>
+
+# third area valid pages VAD RW(0x4), modified to 0x10(X): 0xc00000 - 0xc10000
+l - <ENTER> - 0x10000 - <ENTER> - 0x4 - <ENTER> - <ENTER> - <ENTER>
+a - p - w - 0xc00000 - 0xc10000 - <ENTER> - <ENTER>
+v - 0xc00000 - 0x10000 - 0x10 - <ENTER> - <ENTER> - <ENTER>
+
+# fourth area valid pages VAD RWX(0x40), one page modified to 0x4(RW): 0xc10000 - 0xc20000
+l - <ENTER> - 0x10000 - <ENTER> - 0x40 - <ENTER> - <ENTER> - <ENTER>
+a - p - w - 0xc10000 - 0xc20000 - <ENTER> - <ENTER>
+v - 0xc14000 - 0x1000 - 0x4 - <ENTER> - <ENTER> - <ENTER>
+
+
+# now shrink the transition pages process
+s - <ENTER> - <ENTER>
+
+# and take memdump immediately afterwards
