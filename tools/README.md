@@ -13,4 +13,4 @@ This folder contains the source code and binaries for all Code Injection tools.
 
 Other tools:
 
-* [MemTest](http://www.opening-windows.com/wmip/testcode/download/license.html)
+* [MemTest](http://www.opening-windows.com/wmip/testcode/download/license.html) - Also, check out the according great book "What Makes It Page?: The Windows 7 (x64) Virtual Memory Manager Paperback" by Enrico Martignetti (available on Amazon).
