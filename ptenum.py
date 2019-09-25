@@ -683,6 +683,9 @@ class PteEnumerator(core.DirectoryDumperMixin, common.WinProcessFilter):
 
 
     def vad_contains_mapped_file(self, vad):
+        if isinstance(vad, int):
+            return False
+
         return vad.u.VadFlags.VadType.v() == 2 or \
             self.get_vad_filename(vad) != ''
 
