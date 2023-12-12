@@ -1,8 +1,8 @@
 // selfModifyingCode.cpp : Defines the entry point for the console application.
 //
 
-#include "stdafx.h"
-#include "Windows.h"
+#include <stdio.h>
+#include "windows.h"
 
 
 void funca(int a) {
@@ -17,15 +17,16 @@ void funca(int a) {
 }
 
 
-int _tmain(int argc, _TCHAR* argv[])
+int main()
 {
-	int arg;
+	int offset;
 	#ifdef _M_AMD64
-	arg = 45;
+	offset = 39;
 	#else
-	arg = 37;
+	offset = 37;
 	#endif
 
+    printf("offset is %d\n", offset);
 	funca(5);
 	printf("Before modification\n");
 	void *funca_addr = (void*)funca;
@@ -52,7 +53,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		printf("[++] Current Protection for function: %#02x.\n", basic_info.Protect);
 	}
 	getchar();
-	unsigned char *instruction = (unsigned char*)funca_addr + arg;
+	unsigned char *instruction = (unsigned char*)funca_addr + offset;
 	printf("instruction address: %p\n", instruction);
 	*instruction = 0x2A;
 
